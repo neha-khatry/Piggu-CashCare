@@ -225,13 +225,28 @@ class _AddExpensePageState extends State<AddExpensePage> {
                           'Amount: NPR ${expense['amount']} \n${_formatDate(expense['timestamp'])}',
                         ),
                         trailing: IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(FirebaseAuth.instance.currentUser!.uid)
-                                .collection('expenses')
-                                .doc(expense.id)
-                                .delete();
+                          icon: Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EditExpensePage(
+                                  expenseSource: expense['source'],
+                                  expenseAmount: expense['amount'],
+                                  onEdit : (source,amount){
+                                  FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                                    .collection('expenses')
+                                    .doc(expense.id)
+                                    .update({
+                                'source': source,
+                                'amount': amount,
+                                });
+                                },
+                                ),
+                              ),
+                            );
                           },
                         ),
                       );

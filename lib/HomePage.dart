@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'LoginPage.dart';
-import 'AddIncomePage.dart';
-import 'AddExpensePage.dart';
+import 'package:piggu/AddIncomePage.dart' as IncomePage;  // Aliased import
+import 'package:piggu/AddExpensePage.dart' as ExpensePage;  // Aliased import
 import 'GoalsPage.dart';
 import 'AccountPage.dart';
 import 'receipt_scanner.dart';
@@ -30,41 +30,22 @@ class _HomePageState extends State<HomePage> {
     _listenToFinancialData();
   }
 
-  // Function to listen to financial data (income and expenses) from Firestore
   void _listenToFinancialData() {
-    final userId = widget.user.uid;
+    FirebaseFirestore.instance.collection('income').snapshots().listen((snapshot) {
+      double income = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
+      setState(() {
+        totalIncome = income;
+        balance = totalIncome - totalExpenses;
+        isLoading = false;
+      });
+    });
 
-    // Listen to income subcollection
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .collection('income')
-        .snapshots()
-        .listen((incomeSnapshot) {
-      double income = incomeSnapshot.docs.fold(
-        0.0,
-            (sum, doc) => sum + (doc['amount'] ?? 0.0),
-      );
-
-      // Listen to expenses subcollection after fetching income
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('expenses')
-          .snapshots()
-          .listen((expenseSnapshot) {
-        double expenses = expenseSnapshot.docs.fold(
-          0.0,
-              (sum, doc) => sum + (doc['amount'] ?? 0.0),
-        );
-
-        // Update the state with total income, expenses, and balance
-        setState(() {
-          totalIncome = income;
-          totalExpenses = expenses;
-          balance = totalIncome - totalExpenses; // Calculate the balance
-          isLoading = false;
-        });
+    FirebaseFirestore.instance.collection('expenses').snapshots().listen((snapshot) {
+      double expenses = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
+      setState(() {
+        totalExpenses = expenses;
+        balance = totalIncome - totalExpenses;
+        isLoading = false;
       });
     });
   }
@@ -77,18 +58,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _navigateToNotificationsPage(BuildContext context) {
-    // TODO: Implement navigation to NotificationsPage
-  }
-
-  void _navigateToHistoryPage(BuildContext context) {
+  void _navigateToHistoryPage() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => HistoryPage()),
     );
   }
 
-  void _showProfileOptions(BuildContext context) {
+  void _showProfileOptions() {
     showMenu(
       context: context,
       position: RelativeRect.fromLTRB(0, 50, 0, 0),
@@ -117,7 +94,7 @@ class _HomePageState extends State<HomePage> {
             );
             break;
           case 'history':
-            _navigateToHistoryPage(context);
+            _navigateToHistoryPage();
             break;
           case 'logout':
             _logout(context);
@@ -127,36 +104,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _scanReceipt(BuildContext context) {
-    Navigator.push(
+  void _scanReceipt() async {
+    final receiptData = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ReceiptScanner()),
     );
-  }
 
-  void onAddIncome(double amount) {
-    setState(() {
-      totalIncome += amount;
-      balance += amount;
-    });
-  }
-
-  void onAddExpense(double amount) {
-    setState(() {
-      totalExpenses += amount;
-      balance -= amount;
-    });
+    if (receiptData != null && receiptData['total_amount'] != null) {
+      setState(() {
+        balance += receiptData['total_amount'];
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator(),
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
 
-    final ThemeData themeData = ThemeData(
+    final themeData = ThemeData(
       primaryColor: Colors.pink,
       colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.pink.shade900),
       textTheme: TextTheme(
@@ -176,33 +147,18 @@ class _HomePageState extends State<HomePage> {
     return Theme(
       data: themeData,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('Dashboard'),
-          backgroundColor: Colors.pink,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.notifications),
-              onPressed: () => _navigateToNotificationsPage(context),
-            ),
-            IconButton(
-              icon: Icon(Icons.more_vert),
-              onPressed: () => _showProfileOptions(context),
-            ),
-          ],
-        ),
+        appBar: _buildCustomAppBar(),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: <Widget>[
-                _buildBalanceCard(),
-                SizedBox(height: 20),
-                _buildSummaryCards(),
-                SizedBox(height: 20),
-                _buildActionGrid(),
-              ],
-            ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: <Widget>[
+              _buildBalanceCard(),
+              SizedBox(height: 20),
+              _buildSummaryCards(),
+              SizedBox(height: 20),
+              _buildActionGrid(),
+            ],
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -210,27 +166,21 @@ class _HomePageState extends State<HomePage> {
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.pink.shade100,
           items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history),
-              label: 'History',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle),
-              label: 'Account',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+            BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Account'),
           ],
           onTap: (index) {
-            if (index == 1) {
-              _navigateToHistoryPage(context);
-            } else if (index == 2) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AccountPage(user: widget.user)),
-              );
+            switch (index) {
+              case 1:
+                _navigateToHistoryPage();
+                break;
+              case 2:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AccountPage(user: widget.user)),
+                );
+                break;
             }
           },
         ),
@@ -238,27 +188,53 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildBalanceCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.pink.shade900, Colors.pink.shade700],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
+  AppBar _buildCustomAppBar() {
+    return AppBar(
+      title: Row(
         children: [
-          Text('Current Balance', style: TextStyle(fontSize: 22, color: Colors.white)),
-          SizedBox(height: 10),
+          Image.asset('assets/images/logo.png', height: 30, width: 30),
+          SizedBox(width: 8),
           Text(
-            'NPR ${balance.toStringAsFixed(2)}',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+            'Piggu: CashCare',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontFamily: 'Pacifico',
+            ),
           ),
         ],
+      ),
+      backgroundColor: Colors.pink,
+      actions: [
+        IconButton(icon: Icon(Icons.notifications), onPressed: () {}),
+        IconButton(icon: Icon(Icons.more_vert), onPressed: _showProfileOptions),
+      ],
+    );
+  }
+
+  Widget _buildBalanceCard() {
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.pink.shade900, Colors.pink.shade700],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Text('Current Balance', style: TextStyle(fontSize: 22, color: Colors.white)),
+            SizedBox(height: 10),
+            Text('NPR ${balance.toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+          ],
+        ),
       ),
     );
   }
@@ -275,19 +251,26 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSummaryCard(String title, double amount, Color color) {
     return Expanded(
-      child: Container(
-        margin: const EdgeInsets.all(8.0),
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(title, style: TextStyle(fontSize: 18, color: color)),
-            SizedBox(height: 8),
-            Text('NPR ${amount.toStringAsFixed(2)}', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          ],
+      child: Card(
+        elevation: 4.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          margin: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Text(title, style: TextStyle(fontSize: 18, color: color)),
+              SizedBox(height: 8),
+              Text(
+                'NPR ${amount.toStringAsFixed(2)}',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -302,16 +285,17 @@ class _HomePageState extends State<HomePage> {
       physics: NeverScrollableScrollPhysics(),
       children: [
         _buildActionButton(Icons.add, 'Add Income', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddIncomePage()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => IncomePage.AddIncomePage()));  // Use alias
         }),
         _buildActionButton(Icons.remove, 'Add Expense', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddExpensePage()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ExpensePage.AddExpensePage()));  // Use alias
         }),
-        _buildActionButton(Icons.camera, 'Scan Receipt', () {
-          _scanReceipt(context);
-        }),
+        _buildActionButton(Icons.camera, 'Scan Receipt', _scanReceipt),
         _buildActionButton(Icons.flag, 'Goals', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => GoalSettingPage(user: widget.user)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => GoalSettingPage(user: widget.user)),
+          );
         }),
       ],
     );
@@ -326,7 +310,7 @@ class _HomePageState extends State<HomePage> {
       ),
       onPressed: onPressed,
       icon: Icon(icon, size: 24, color: Colors.white),
-      label: Text(label, style: TextStyle(fontSize: 16, color: Colors.white)),
+      label: Text(label, style: TextStyle(color: Colors.white)),
     );
   }
 }

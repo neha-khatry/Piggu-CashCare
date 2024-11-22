@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'GraphsPage.dart'; // Import the GraphsPage
@@ -13,8 +13,9 @@ class _HistoryPageState extends State<HistoryPage> {
   Map<String, List<Map<String, dynamic>>> _groupedHistory = {};
   DateTime? _selectedDate;
   final User user = FirebaseAuth.instance.currentUser!; // Access current user
-  Map<String, double> monthlyIncome = {};
-  Map<String, double> monthlyExpenses = {};
+  Map<String, List<double>> dailyIncome = {}; // List of income amounts for each day
+  Map<String, List<double>> dailyExpenses = {}; // List of expense amounts for each day
+  bool isLoading = false; // Add loading state
 
   @override
   void initState() {
@@ -23,6 +24,10 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<void> _fetchHistoryData() async {
+    setState(() {
+      isLoading = true; // Set loading to true while data is being fetched
+    });
+
     try {
       // Fetching income data for the current user
       QuerySnapshot incomeSnapshot = await FirebaseFirestore.instance
@@ -30,7 +35,6 @@ class _HistoryPageState extends State<HistoryPage> {
           .doc(user.uid)  // Access the user's document by their UID
           .collection('income')  // Access the 'income' subcollection
           .get();
-      print('Income Data: ${incomeSnapshot.docs.length} items fetched');
 
       // Fetching expense data for the current user
       QuerySnapshot expenseSnapshot = await FirebaseFirestore.instance
@@ -38,12 +42,10 @@ class _HistoryPageState extends State<HistoryPage> {
           .doc(user.uid)  // Access the user's document by their UID
           .collection('expenses')  // Access the 'expenses' subcollection
           .get();
-      print('Expense Data: ${expenseSnapshot.docs.length} items fetched');
 
       // Combining income and expense data
       List<Map<String, dynamic>> history = [
         ...incomeSnapshot.docs.map((doc) {
-          print("Income: ${doc.data()}"); // Debug
           return {
             'id': doc.id,
             'type': 'Income',
@@ -53,7 +55,6 @@ class _HistoryPageState extends State<HistoryPage> {
           };
         }).toList(),
         ...expenseSnapshot.docs.map((doc) {
-          print("Expense: ${doc.data()}"); // Debug
           return {
             'id': doc.id,
             'type': 'Expense',
@@ -66,31 +67,34 @@ class _HistoryPageState extends State<HistoryPage> {
 
       Map<String, List<Map<String, dynamic>>> groupedHistory = {};
 
-      // Grouping history data by date
+      // Grouping history data by date and adding income/expense values to dailyIncome/dailyExpenses
       for (var item in history) {
         String formattedDate =
         DateFormat('yyyy-MM-dd').format((item['timestamp'] as Timestamp).toDate());
+
+        // Initialize list for this date if not already present
         if (!groupedHistory.containsKey(formattedDate)) {
           groupedHistory[formattedDate] = [];
         }
         groupedHistory[formattedDate]!.add(item);
 
-        // Accumulate monthly income and expenses for graphs
-        String timeKey =
-        DateFormat('yyyy-MM').format((item['timestamp'] as Timestamp).toDate());
+        // Add income or expense values to dailyIncome or dailyExpenses
         if (item['type'] == 'Income') {
-          monthlyIncome[timeKey] = (monthlyIncome[timeKey] ?? 0) + item['amount'];
+          dailyIncome[formattedDate] = (dailyIncome[formattedDate] ?? [])..add(item['amount']);
         } else if (item['type'] == 'Expense') {
-          monthlyExpenses[timeKey] = (monthlyExpenses[timeKey] ?? 0) + item['amount'];
+          dailyExpenses[formattedDate] = (dailyExpenses[formattedDate] ?? [])..add(item['amount']);
         }
       }
 
-      // Update state with fetched data
       setState(() {
         _groupedHistory = groupedHistory;
+        isLoading = false; // Set loading to false when data is fetched
       });
     } catch (e) {
       print('Error fetching data: $e');
+      setState(() {
+        isLoading = false; // Set loading to false in case of an error
+      });
     }
   }
 
@@ -120,15 +124,14 @@ class _HistoryPageState extends State<HistoryPage> {
     }
   }
 
-  // Navigate to GraphsPage and pass monthlyIncome and monthlyExpenses
+  // Navigate to GraphsPage and pass dailyIncome and dailyExpenses
   void _navigateToGraphsPage() {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => GraphsPage(
-          user: user,
-          monthlyIncome: monthlyIncome,
-          monthlyExpenses: monthlyExpenses,
+          dailyIncome: dailyIncome,
+          dailyExpenses: dailyExpenses,
         ),
       ),
     );
@@ -176,7 +179,9 @@ class _HistoryPageState extends State<HistoryPage> {
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
             Expanded(
-              child: _groupedHistory.isEmpty
+              child: isLoading // Display loading indicator when data is being fetched
+                  ? Center(child: CircularProgressIndicator())
+                  : _groupedHistory.isEmpty
                   ? Center(child: Text("No transaction history available."))
                   : ListView(
                 children: filteredHistory.entries.map((entry) {
