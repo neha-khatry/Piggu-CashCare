@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Importing the intl package for date formatting
+import 'package:intl/intl.dart'; // For date formatting
 import 'EditIncomePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:piggu/api_service.dart';  // Import ApiService
 
 class AddIncomePage extends StatefulWidget {
   @override
@@ -13,6 +14,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
   final _formKey = GlobalKey<FormState>();
   final _incomeSourceController = TextEditingController();
   final _incomeAmountController = TextEditingController();
+  final ApiService _apiService = ApiService();  // Instance of ApiService
 
   Map<String, Map<String, dynamic>> _incomeCategories = {
     'Salary': {'icon': Icons.work, 'description': 'Salary'},
@@ -40,7 +42,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
 
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .doc(userId)
           .collection('income')
           .add({
         'source': source,
@@ -58,6 +60,28 @@ class _AddIncomePageState extends State<AddIncomePage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to add income: $e')),
+      );
+    }
+  }
+
+  // Call ApiService to send income data to PostgreSQL
+  Future<void> _addIncomeToPostgres(String source, double amount) async {
+    try {
+      final timestamp = DateTime.now().toIso8601String(); // Get current timestamp
+
+      // Call ApiService to send income data to PostgreSQL
+      bool success = await _apiService.sendIncomeData(amount, source, timestamp);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Income added to PostgreSQL successfully')),
+        );
+      } else {
+        throw Exception('Failed to add income to PostgreSQL');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add income to PostgreSQL: $e')),
       );
     }
   }
@@ -150,8 +174,9 @@ class _AddIncomePageState extends State<AddIncomePage> {
                           final incomeSource = _incomeSourceController.text;
                           final incomeAmount = double.parse(_incomeAmountController.text);
 
-                          // Add to Firebase
+                          // Add to Firebase and PostgreSQL
                           _addIncomeToFirebase(incomeSource, incomeAmount);
+                          _addIncomeToPostgres(incomeSource, incomeAmount);
                         }
                       },
                       child: Text('Add Income'),
@@ -224,15 +249,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
                               );
                             },
                           ),
-                          Text(
-                            category,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.pink,
-                            ),
-                          ),
+                          Text(category),
                         ],
                       ),
                     );
@@ -240,16 +257,14 @@ class _AddIncomePageState extends State<AddIncomePage> {
                 ),
               ),
               SizedBox(height: 16.0),
-              // Real-time Income List
+              // Real-time Income List with StreamBuilder
               StreamBuilder<QuerySnapshot>(
-                stream: FirebaseAuth.instance.currentUser == null
-                    ? null
-                    : FirebaseFirestore.instance
+                stream: FirebaseFirestore.instance
                     .collection('users')
                     .doc(FirebaseAuth.instance.currentUser!.uid)
                     .collection('income')
                     .orderBy('timestamp', descending: true)
-                    .snapshots(),
+                    .snapshots(), // Firestore stream listens for real-time updates
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return CircularProgressIndicator();
@@ -296,12 +311,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
                                 );
                               },
                             ),
-                            IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                _deleteIncomeFromFirebase(income.id);
-                              },
-                            ),
+
                           ],
                         ),
                       );
