@@ -129,10 +129,7 @@ class _HistoryPageState extends State<HistoryPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GraphsPage(
-          dailyIncome: dailyIncome,
-          dailyExpenses: dailyExpenses,
-        ),
+        builder: (context) => GraphPage(),
       ),
     );
   }

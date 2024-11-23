@@ -31,7 +31,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _listenToFinancialData() {
-    FirebaseFirestore.instance.collection('income').snapshots().listen((snapshot) {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    FirebaseFirestore.instance.collection('users')
+        .doc(userId)
+        .collection('income').snapshots().listen((snapshot) {
       double income = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
       setState(() {
         totalIncome = income;
@@ -40,7 +43,9 @@ class _HomePageState extends State<HomePage> {
       });
     });
 
-    FirebaseFirestore.instance.collection('expenses').snapshots().listen((snapshot) {
+    FirebaseFirestore.instance..collection('users')
+        .doc(userId)
+        .collection('expenses').snapshots().listen((snapshot) {
       double expenses = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
       setState(() {
         totalExpenses = expenses;
