@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-///import 'HomePage.dart';
-import 'LoginPage.dart';
+import '../services/firebase_auth_service.dart';
+import '../services/django_service.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -9,27 +9,25 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late String _email, _password;
+  final _formKey = GlobalKey<FormState>();
+  String _email = '';
+  String _password = '';
+  final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
+  final DjangoService _djangoService = DjangoService();
 
   void _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
       try {
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-          email: _email,
-          password: _password,
-        );
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Account created successfully'),
-        ));
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
-        );
+        User? user = await _firebaseAuthService.signUpWithEmail(_email, _password);
+        if (user != null) {
+          await _djangoService.saveUserToDjango(user.uid, _email);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Account created successfully'),
+          ));
+          Navigator.pushReplacementNamed(context, '/login');
+        }
       } catch (e) {
-        print(e);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Failed to sign up: $e'),
         ));

@@ -16,10 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from piggu.views import home  # Import the `home` function from the app
+from piggu.views import home  
+from piggu.views import RegisterUserView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('register/', RegisterUserView.as_view(), name='register'),
     path('api/', include('piggu.urls')),  # Include app-level URLs
     path('', home, name='home'),  # Root URL
 ]

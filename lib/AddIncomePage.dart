@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'EditIncomePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:piggu/api_service.dart';  // Import ApiService
+import 'package:piggu/services/api_service.dart'; // Import ApiService
 
 class AddIncomePage extends StatefulWidget {
   @override
@@ -14,7 +14,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
   final _formKey = GlobalKey<FormState>();
   final _incomeSourceController = TextEditingController();
   final _incomeAmountController = TextEditingController();
-  final ApiService _apiService = ApiService();  // Instance of ApiService
+  final ApiService _apiService = ApiService(); // Instance of ApiService
 
   Map<String, Map<String, dynamic>> _incomeCategories = {
     'Salary': {'icon': Icons.work, 'description': 'Salary'},
@@ -65,12 +65,12 @@ class _AddIncomePageState extends State<AddIncomePage> {
   }
 
   // Call ApiService to send income data to PostgreSQL
-  Future<void> _addIncomeToPostgres(String source, double amount) async {
+  Future<void> _addIncomeToPostgres(String userId, String source, double amount) async {
     try {
       final timestamp = DateTime.now().toIso8601String(); // Get current timestamp
 
       // Call ApiService to send income data to PostgreSQL
-      bool success = await _apiService.sendIncomeData(amount, source, timestamp);
+      bool success = await _apiService.sendIncomeData(userId, amount, source, timestamp);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -82,34 +82,6 @@ class _AddIncomePageState extends State<AddIncomePage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to add income to PostgreSQL: $e')),
-      );
-    }
-  }
-
-  // Delete income from Firebase
-  Future<void> _deleteIncomeFromFirebase(String id) async {
-    try {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No user is logged in')),
-        );
-        return;
-      }
-
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('income')
-          .doc(id)
-          .delete();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Income deleted successfully')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete income: $e')),
       );
     }
   }
@@ -171,12 +143,19 @@ class _AddIncomePageState extends State<AddIncomePage> {
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
+                          final userId = FirebaseAuth.instance.currentUser?.uid;
+                          if (userId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('No user is logged in')),
+                            );
+                            return;
+                          }
                           final incomeSource = _incomeSourceController.text;
                           final incomeAmount = double.parse(_incomeAmountController.text);
 
                           // Add to Firebase and PostgreSQL
                           _addIncomeToFirebase(incomeSource, incomeAmount);
-                          _addIncomeToPostgres(incomeSource, incomeAmount);
+                          _addIncomeToPostgres(userId, incomeSource, incomeAmount);
                         }
                       },
                       child: Text('Add Income'),
@@ -189,6 +168,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
                 ),
               ),
               SizedBox(height: 16.0),
+
               // Category Grid
               Scrollbar(
                 child: GridView.builder(
@@ -257,6 +237,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
                 ),
               ),
               SizedBox(height: 16.0),
+
               // Real-time Income List with StreamBuilder
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
@@ -283,7 +264,9 @@ class _AddIncomePageState extends State<AddIncomePage> {
                       final timestamp = (income['timestamp'] as Timestamp).toDate();
                       return ListTile(
                         title: Text(income['source']),
-                        subtitle: Text('Amount: NPR ${income['amount']} \nDate: ${_formatDate(timestamp)}'),
+                        subtitle: Text(
+                          'Amount: NPR ${income['amount']} \nDate: ${_formatDate(timestamp)}',
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -311,7 +294,6 @@ class _AddIncomePageState extends State<AddIncomePage> {
                                 );
                               },
                             ),
-
                           ],
                         ),
                       );

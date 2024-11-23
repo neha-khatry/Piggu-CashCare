@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'EditExpensePage.dart';
-import 'api_service.dart'; // Import the ApiService
+import 'services/api_service.dart'; // Import the ApiService
 
 class AddExpensePage extends StatefulWidget {
   @override

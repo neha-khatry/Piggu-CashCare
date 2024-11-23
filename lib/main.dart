@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:piggu/firebase_api.dart';
+import 'package:piggu/services/firebase_api.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart';
-import 'LoginPage.dart';
 import 'welcome_page.dart';
 
 void main() async {
