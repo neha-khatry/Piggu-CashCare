@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
 class IncomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Income
-        fields = ['user_id','amount', 'source', 'timestamp']
+        fields = ['user_id','id','amount', 'source', 'timestamp']
 
     #def create(self, validated_data):
         # Custom logic if needed before saving

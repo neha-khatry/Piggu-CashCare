@@ -15,14 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
-from piggu.views import home  
-from piggu.views import RegisterUserView
+from django.urls import path, include 
+from piggu.views import IncomeViews, ExpenseViews, RegisterUserView, UserChartData
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('register/', RegisterUserView.as_view(), name='register'),
-    path('api/', include('piggu.urls')),  # Include app-level URLs
-    path('', home, name='home'),  # Root URL
+    path('api/register/', RegisterUserView.as_view(), name='register'),
+    path('api/income/', IncomeViews.as_view(), name='income-api'),
+    path('api/expense/', ExpenseViews.as_view(), name='expense-api'),
+    path('api/user-chart-data/', UserChartData.as_view(), name='user-chart-data'),
+    path('', include('piggu.urls')),  # Include app-level URLs
 ]

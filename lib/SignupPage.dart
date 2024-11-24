@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/django_service.dart';
+import 'LoginPage.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -25,7 +26,10 @@ class _SignupPageState extends State<SignupPage> {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Account created successfully'),
           ));
-          Navigator.pushReplacementNamed(context, '/login');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          ); // Navigate to login page
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -38,14 +42,14 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Updated background color to white
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.pink, // Updated app bar color to pink
-        title: Text('Sign Up', style: TextStyle(color: Colors.white)), // Updated title text color to white
+        backgroundColor: Colors.pink,
+        title: Text('Sign Up', style: TextStyle(color: Colors.white)),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white), // Updated icon color to white
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context); // This will take the user back to the previous page
+            Navigator.pop(context);
           },
         ),
       ),
@@ -63,7 +67,7 @@ class _SignupPageState extends State<SignupPage> {
               SizedBox(height: 20),
               Text(
                 'Create an Account',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.pink), // Updated text color to pink
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.pink),
               ),
               SizedBox(height: 20),
               Form(
@@ -72,7 +76,15 @@ class _SignupPageState extends State<SignupPage> {
                   children: <Widget>[
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(labelText: 'Email', filled: true, fillColor: Colors.white, enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.pink), borderRadius: BorderRadius.all(Radius.circular(10.0)))),
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.pink),
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        ),
+                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
@@ -84,7 +96,15 @@ class _SignupPageState extends State<SignupPage> {
                     SizedBox(height: 20),
                     TextFormField(
                       obscureText: true,
-                      decoration: InputDecoration(labelText: 'Password', filled: true, fillColor: Colors.white, enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.pink), borderRadius: BorderRadius.all(Radius.circular(10.0)))),
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.pink),
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        ),
+                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
@@ -96,14 +116,17 @@ class _SignupPageState extends State<SignupPage> {
                     SizedBox(height: 20),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink, // Change the button color here
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(30.0))),
+                        backgroundColor: Colors.pink,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                        ),
                         minimumSize: Size(double.infinity, 50),
                         padding: EdgeInsets.symmetric(horizontal: 16),
                       ),
                       onPressed: _submit,
-                      icon: Icon(Icons.app_registration, color: Colors.white), // Change the icon here
-                      label: Text('Sign Up', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      icon: Icon(Icons.app_registration, color: Colors.white),
+                      label: Text('Sign Up',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     ),
                   ],
                 ),

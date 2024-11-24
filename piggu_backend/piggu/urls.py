@@ -1,11 +1,12 @@
 from django.urls import path
-from piggu.views import Income, Expense
+from piggu.views import IncomeViews, ExpenseViews
 from .views import RegisterUserView
-#from .views import IncomeExpenseSummaryView
-
+from .views import UserChartData
+#from .views import YourApiView
 urlpatterns = [
-    path('income/', Income.as_view(), name='income-api'),
-    path('expense/', Expense.as_view(), name='expense-api'),
+    path('income/', IncomeViews.as_view(), name='income-api'),
+    path('expense/', ExpenseViews.as_view(), name='expense-api'),
     path('register/', RegisterUserView.as_view(), name='register'),
-    #path('summary/', IncomeExpenseSummaryView.as_view(), name='income_expense_summary'),
+    path('user-chart-data/', UserChartData.as_view(), name='user_chart_data'),
+    #path('api/your-endpoint/', YourApiView.as_view(), name='your-endpoint')
 ]
