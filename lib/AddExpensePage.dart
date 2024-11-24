@@ -366,7 +366,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
     // Save to PostgreSQL via ApiService
     try {
       final timestamp = DateTime.now().toIso8601String();
-      bool success = await _apiService.sendExpenseData(
+      bool success = await _apiService.sendExpenseData(userId,
           amount, source, timestamp);
 
       if (success) {

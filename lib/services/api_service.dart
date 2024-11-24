@@ -21,11 +21,16 @@ class ApiService {
   }
 
   // POST request for expense data
-  Future<bool> sendExpenseData(double amount, String source, String timestamp) async {
+  Future<bool> sendExpenseData(String userId, double amount, String source, String timestamp) async {
     final response = await http.post(
       Uri.parse('$apiUrl/expense/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'amount': amount, 'source': source, 'timestamp': timestamp}),
+      body: jsonEncode({
+        'user_id': userId, // Include user_id in the request body
+        'amount': amount,
+        'source': source,
+        'timestamp': timestamp
+      }),
     );
 
     if (response.statusCode == 201) {
@@ -35,6 +40,7 @@ class ApiService {
       return false;
     }
   }
+
 
   // Fetch income and expense data for visualization
   Future<Map<String, double>> fetchIncomeExpenseData() async {
