@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'HomePage.dart';
 import 'SignupPage.dart';
-import 'ResetPasswordPage.dart';
-import 'services/django_service.dart'; // Import the DjangoService
 
 class LoginPage extends StatefulWidget {
   @override
@@ -17,8 +15,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   bool _obscurePassword = true;
-  final DjangoService _djangoService = DjangoService(); // Create an instance of DjangoService
-  String? _firebaseIdToken; // Variable to hold the Firebase ID token
 
   @override
   void initState() {
@@ -28,7 +24,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     _controller.forward();
   }
 
-  // Submit function to handle login and token retrieval
   void _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
@@ -37,31 +32,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           email: _email,
           password: _password,
         );
-        User? user = userCredential.user;
-
-        if (user != null) {
-          // Get the Firebase ID token
-          String? idToken = await user.getIdToken();
-
-          if (idToken != null) {
-            // Print the Firebase ID token to the console
-            print("Firebase ID Token: $idToken");
-
-            // Save the token to display it (optional)
-            setState(() {
-              _firebaseIdToken = idToken;
-            });
-
-            // Send the ID token to your backend to fetch user-specific data
-            //await _djangoService.sendTokenToBackend(idToken);
-
-            // Navigate to HomePage after successful login
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage(user: user)),
-            );
-          }
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(user: userCredential.user!)),
+        );
       } on FirebaseAuthException catch (e) {
         String errorMessage = '';
         if (e.code == 'user-not-found') {
@@ -184,10 +158,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     SizedBox(height: 20),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ResetPasswordPage()),
-                        );
+                        Navigator.pushNamed(context, '/reset-password');
                       },
                       child: Text(
                         'Forgot Password?',
@@ -196,10 +167,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => SignupPage()),
-                        );
+                        Navigator.pushNamed(context, '/signup');
                       },
                       child: Text.rich(
                         TextSpan(
@@ -210,14 +178,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    // Display Firebase ID Token here (for debugging purposes)
-                    SizedBox(height: 20),
-                    _firebaseIdToken != null
-                        ? Text(
-                      'Firebase ID Token: $_firebaseIdToken',
-                      style: TextStyle(fontSize: 14, color: Colors.black),
-                    )
-                        : Container(), // Only show token if it's not null
                   ],
                 ),
               ),
