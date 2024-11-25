@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class GoalSettingPage extends StatefulWidget {
   final User user;
@@ -15,13 +16,50 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
   final _goalController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   List<String> _goals = [];
-
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
     super.initState();
-    _loadGoals(); // Ensure goals are loaded when the page is first created
+    _initializeNotifications();
+    _loadGoals();
+    _listenForGoalChanges();
+  }
+
+  // Initialize local notifications
+  void _initializeNotifications() {
+    const initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+    );
+
+    _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  // Show notification
+  Future<void> _showNotification({required String title, required String message}) async {
+    const androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'goals_channel',
+      'Goals Notifications',
+      channelDescription: 'Notifications for goal updates',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      title,
+      message,
+      notificationDetails,
+    );
   }
 
   // Load goals from Firestore
@@ -48,7 +86,7 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
           .collection('users')
           .doc(widget.user.uid)
           .collection('goals')
-          .add({'goal': goal, 'createdAt': Timestamp.now()});
+          .add({'goal': goal, 'status': 'in-progress', 'createdAt': Timestamp.now()});
     } catch (e) {
       print("Error saving goal: $e");
     }
@@ -57,7 +95,6 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
   // Delete goal from Firestore
   Future<void> _deleteGoalFromFirestore(String goal) async {
     try {
-      // Get all the goals
       final goalsSnapshot = await _firestore
           .collection('users')
           .doc(widget.user.uid)
@@ -65,13 +102,38 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
           .where('goal', isEqualTo: goal)
           .get();
 
-      // Delete the goal from Firestore
       for (var doc in goalsSnapshot.docs) {
         await doc.reference.delete();
       }
     } catch (e) {
       print("Error deleting goal: $e");
     }
+  }
+
+  // Listen for changes in Firestore
+  void _listenForGoalChanges() {
+    _firestore
+        .collection('users')
+        .doc(widget.user.uid)
+        .collection('goals')
+        .snapshots()
+        .listen((snapshot) {
+      for (var change in snapshot.docChanges) {
+        if (change.type == DocumentChangeType.added) {
+          _showNotification(
+            title: 'New Goal Added!',
+            message: 'You added: ${change.doc['goal']}',
+          );
+        } else if (change.type == DocumentChangeType.modified) {
+          if (change.doc['status'] == 'reached') {
+            _showNotification(
+              title: 'Goal Reached!',
+              message: 'Congratulations! You reached your goal: ${change.doc['goal']}',
+            );
+          }
+        }
+      }
+    });
   }
 
   String? _validateGoal(String? value) {
@@ -88,10 +150,7 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
         _goals.add(goal);
       });
 
-      // Save goal to Firestore
       _saveGoalToFirestore(goal);
-
-      // Clear input field
       _goalController.clear();
     }
   }
@@ -102,7 +161,6 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
       _goals.removeAt(index);
     });
 
-    // Delete goal from Firestore
     _deleteGoalFromFirestore(goalToDelete);
   }
 
@@ -161,17 +219,17 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white, // Ensure the text color is white
+                            color: Colors.white,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.pink.shade700, // Stronger pink color
+                          backgroundColor: Colors.pink.shade700,
                           padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          shadowColor: Colors.pink.shade900, // Adds a subtle shadow effect
-                          elevation: 5.0, // Adds depth to the button
+                          shadowColor: Colors.pink.shade900,
+                          elevation: 5.0,
                         ),
                       ),
                     ],
@@ -231,7 +289,7 @@ class _GoalSettingPageState extends State<GoalSettingPage> {
                                 trailing: IconButton(
                                   icon: Icon(Icons.delete, color: Colors.red),
                                   onPressed: () {
-                                    _deleteGoal(index); // Call delete function
+                                    _deleteGoal(index);
                                   },
                                 ),
                               ),

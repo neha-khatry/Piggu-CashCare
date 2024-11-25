@@ -3,16 +3,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:piggu/services/firebase_api.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';  // Import FirebaseMessaging
+
 import 'welcome_page.dart';
 import 'SignupPage.dart';
 import 'ResetPasswordPage.dart';
-import 'LoginPage.dart';// Add this import
+import 'LoginPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   initializeTimeZones();
   await Firebase.initializeApp();
-  await FirebaseApi().initNotifications();
+  await FirebaseApi().initNotifications();  // Initialize notifications
   runApp(MyApp());
 }
 
@@ -23,11 +25,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Piggu:CashCare', // Update this line
+      title: 'Piggu:CashCare',
       theme: ThemeData(
-        primarySwatch: Colors.green, // Update this line
+        primarySwatch: Colors.green,
       ),
-      // Define named routes
       initialRoute: '/',
       routes: {
         '/': (context) => WelcomePage(),
@@ -38,5 +39,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-

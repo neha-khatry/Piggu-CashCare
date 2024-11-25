@@ -43,7 +43,7 @@ class _HomePageState extends State<HomePage> {
       });
     });
 
-    FirebaseFirestore.instance..collection('users')
+    FirebaseFirestore.instance.collection('users')
         .doc(userId)
         .collection('expenses').snapshots().listen((snapshot) {
       double expenses = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
@@ -212,21 +212,32 @@ class _HomePageState extends State<HomePage> {
       ),
       backgroundColor: Colors.pink,
       actions: [
-        IconButton(icon: Icon(Icons.notifications), onPressed: () {}),
-        IconButton(icon: Icon(Icons.more_vert), onPressed: _showProfileOptions),
+        IconButton(
+          icon: Icon(Icons.notifications),
+          onPressed: () {
+            // Navigate to the NotificationsPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => NotificationsPage()),
+            );
+          },
+        ),
       ],
     );
   }
 
   Widget _buildBalanceCard() {
+    // Determine the color based on balance
+    Color cardColor = balance >= 0 ? Colors.green.shade300 : Colors.red.shade300;
+
     return Card(
-      elevation: 4.0,
+      elevation: 8.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.pink.shade900, Colors.pink.shade700],
+            colors: [cardColor.withOpacity(0.9), cardColor],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -257,7 +268,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSummaryCard(String title, double amount, Color color) {
     return Expanded(
       child: Card(
-        elevation: 4.0,
+        elevation: 6.0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           margin: const EdgeInsets.all(8.0),
@@ -291,31 +302,49 @@ class _HomePageState extends State<HomePage> {
       children: [
         _buildActionButton(Icons.add, 'Add Income', () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => IncomePage.AddIncomePage()));  // Use alias
-        }),
+        }, Colors.green.shade300),
         _buildActionButton(Icons.remove, 'Add Expense', () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => ExpensePage.AddExpensePage()));  // Use alias
-        }),
-        _buildActionButton(Icons.camera, 'Scan Receipt', _scanReceipt),
+        }, Colors.red.shade300),
+        _buildActionButton(Icons.camera, 'Scan Receipt', _scanReceipt, Colors.purple.shade300),
         _buildActionButton(Icons.flag, 'Goals', () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => GoalSettingPage(user: widget.user)),
           );
-        }),
+        }, Colors.blue.shade300),
       ],
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label, VoidCallback onPressed) {
+  Widget _buildActionButton(IconData icon, String label, VoidCallback onPressed, Color color) {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.pink,
+        backgroundColor: color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: EdgeInsets.symmetric(vertical: 16),
+        shadowColor: Colors.black.withOpacity(0.2),
+        elevation: 4,
       ),
       onPressed: onPressed,
       icon: Icon(icon, size: 24, color: Colors.white),
       label: Text(label, style: TextStyle(color: Colors.white)),
+    );
+  }
+}
+
+// NotificationsPage class
+class NotificationsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Notifications'),
+        backgroundColor: Colors.pink,
+      ),
+      body: Center(
+        child: Text('Here are your notifications!'),
+      ),
     );
   }
 }
