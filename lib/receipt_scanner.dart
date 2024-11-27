@@ -6,6 +6,8 @@ import 'dart:io';
 import 'package:photo_view/photo_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -129,19 +131,30 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
   }
 
   void _saveExtractedData() {
+    final ApiService _apiService = ApiService();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final userId = user.uid;
+    final amount = double.tryParse(_amountController.text) ?? 0.0;
+    final source = _categoryController.text.isNotEmpty ? _categoryController.text : 'Others';
+    final timestamp = DateTime.now().toIso8601String();
     final receipt = {
       'merchant': _merchantController.text,
       'date': _dateController.text,
       'amount': double.tryParse(_amountController.text) ?? 0.0,
-      'category': _categoryController.text,
+      'source': _categoryController.text,
     };
     saveReceiptToFirebase(receipt);
+    _apiService.sendExpenseData(userId, amount, source, timestamp);
     _showSnackBar('Receipt saved successfully!', Colors.green);
   }
 
   void saveReceiptToFirebase(Map<String, dynamic> receiptData) async {
     try {
-      await FirebaseFirestore.instance.collection('receipts').add(receiptData);
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('receipts').add(receiptData);
       _showSnackBar('Receipt saved to Firebase successfully!', Colors.green);
     } catch (e) {
       _showSnackBar('Error saving receipt to Firebase: $e', Colors.red);

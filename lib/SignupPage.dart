@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/firebase_auth_service.dart';
@@ -15,21 +16,23 @@ class _SignupPageState extends State<SignupPage> {
   String _password = '';
   final FirebaseAuthService _firebaseAuthService = FirebaseAuthService();
   final DjangoService _djangoService = DjangoService();
+  Timer? _emailCheckTimer;
 
   void _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
       try {
+        // Sign up the user
         User? user = await _firebaseAuthService.signUpWithEmail(_email, _password);
         if (user != null) {
-          await _djangoService.saveUserToDjango(user.uid, _email);
+          // Send email verification
+          await user.sendEmailVerification();
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Account created successfully'),
+            content: Text('A verification email has been sent to $_email. Please verify your email.'),
           ));
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => LoginPage()),
-          ); // Navigate to login page
+
+          // Start a timer to check email verification status
+          _startEmailVerificationCheck(user);
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -37,6 +40,36 @@ class _SignupPageState extends State<SignupPage> {
         ));
       }
     }
+  }
+
+  void _startEmailVerificationCheck(User user) {
+    _emailCheckTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      await user.reload(); // Refresh the user data
+      User? updatedUser = FirebaseAuth.instance.currentUser;
+
+      if (updatedUser?.emailVerified ?? false) {
+        timer.cancel(); // Stop the timer
+
+
+        await _djangoService.saveUserToDjango(user.uid, _email);
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Email verified! Account created successfully.'),
+        ));
+
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _emailCheckTimer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
   }
 
   @override
@@ -88,6 +121,9 @@ class _SignupPageState extends State<SignupPage> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
+                        }
+                        if (!value.endsWith('@gmail.com')) {
+                          return 'Only Gmail accounts are allowed';
                         }
                         return null;
                       },

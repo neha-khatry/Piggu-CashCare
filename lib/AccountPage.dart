@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'LoginPage.dart'; // Import your LoginPage
-import 'HistoryPage.dart'; // Import your HistoryPage
-import 'create_profile_page.dart'; // Import CreateProfilePage
+import 'LoginPage.dart';
+import 'HistoryPage.dart';
+import 'create_profile_page.dart';
 
 class AccountPage extends StatelessWidget {
   final User? user;
@@ -12,7 +12,6 @@ class AccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if user is null
     if (user == null) {
       return Scaffold(
         body: Center(
@@ -29,8 +28,8 @@ class AccountPage extends StatelessWidget {
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .doc(user!.uid) // Use currentUser safely here
-            .snapshots(), // Listen for real-time updates
+            .doc(user!.uid)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -41,7 +40,8 @@ class AccountPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Center(child: Text('No user data found'));
+            // Show the Create Profile option if profile is missing
+            return _buildCreateProfilePrompt(context);
           }
 
           var userData = snapshot.data!.data() as Map<String, dynamic>;
@@ -52,13 +52,66 @@ class AccountPage extends StatelessWidget {
     );
   }
 
+  // Widget to prompt user to create a profile
+  Widget _buildCreateProfilePrompt(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Profile not created yet!',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () {
+              // Navigate to CreateProfilePage
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CreateProfilePage(
+                    isEditing: false, // Indicate that it's a new profile
+                  ),
+                ),
+              );
+            },
+            icon: Icon(Icons.add),
+            label: Text('Create Profile'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () async {
+              // Perform logout action
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
+            icon: Icon(Icons.exit_to_app),
+            label: Text('Logout'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Profile view with options
   Widget _buildProfileView(BuildContext context, Map<String, dynamic> data) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center, // Center the content vertically
-        crossAxisAlignment: CrossAxisAlignment.center, // Center the content horizontally
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          // Profile Image Section (Display Person Icon)
           CircleAvatar(
             radius: 50,
             backgroundColor: Colors.pink,
@@ -74,11 +127,7 @@ class AccountPage extends StatelessWidget {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
-
-          // Profile Details Section
           _buildDetailsSection(context, data),
-
-          // Options Section (History, FAQs, Settings, Logout)
           _buildOptionsSection(context),
         ],
       ),
@@ -105,12 +154,12 @@ class AccountPage extends StatelessWidget {
             SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: () {
-                // Pass the existing user data to CreateProfilePage for editing
+                // Navigate to CreateProfilePage for editing
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CreateProfilePage(
-                      isEditing: true, // Set isEditing flag to true
+                      isEditing: true,
                       name: data['name'],
                       address: data['address'],
                       email: data['email'],
@@ -145,7 +194,6 @@ class AccountPage extends StatelessWidget {
     );
   }
 
-  // Options Section (History, FAQs, Settings, Logout)
   Widget _buildOptionsSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -155,7 +203,6 @@ class AccountPage extends StatelessWidget {
             leading: Icon(Icons.history),
             title: Text('History'),
             onTap: () {
-              // Navigate to History page
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => HistoryPage()),
@@ -166,7 +213,7 @@ class AccountPage extends StatelessWidget {
             leading: Icon(Icons.help_outline),
             title: Text('FAQs'),
             onTap: () {
-              // Navigate to FAQs page (implement this page separately)
+              // Navigate to FAQs page
             },
           ),
           ExpansionTile(
@@ -177,20 +224,20 @@ class AccountPage extends StatelessWidget {
                 leading: Icon(Icons.lock),
                 title: Text('Change Password'),
                 onTap: () {
-                  // Send password reset email
                   _sendPasswordResetEmail(context);
                 },
               ),
             ],
           ),
+          // Logout option moved to the bottom
           ListTile(
-            leading: Icon(Icons.exit_to_app),
+            leading: Icon(Icons.exit_to_app), // Ensure the correct icon
             title: Text('Logout'),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => LoginPage()), // Navigate to LoginPage
+                MaterialPageRoute(builder: (context) => LoginPage()),
               );
             },
           ),
@@ -199,10 +246,8 @@ class AccountPage extends StatelessWidget {
     );
   }
 
-  // Function to send password reset email
   Future<void> _sendPasswordResetEmail(BuildContext context) async {
     try {
-      // Check if the user is logged in
       if (FirebaseAuth.instance.currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -213,10 +258,10 @@ class AccountPage extends StatelessWidget {
         return;
       }
 
-      // Send password reset email
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: FirebaseAuth.instance.currentUser!.email!);
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: FirebaseAuth.instance.currentUser!.email!,
+      );
 
-      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Password reset email sent!'),
@@ -224,7 +269,6 @@ class AccountPage extends StatelessWidget {
         ),
       );
     } catch (e) {
-      // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),

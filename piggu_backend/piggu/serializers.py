@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Income, Expense
 from .models import User
+from .models import Receipt
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +22,11 @@ class ExpenseSerializer(serializers.ModelSerializer):
         model = Expense
         fields = ['user_id','id','amount', 'source', 'timestamp']
 
-    #def create(self, validated_data):
-        # Custom logic if needed before saving
-        #return Expense.objects.create(**validated_data)
+class ReceiptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Receipt
+        fields = ['receipt_number', 'receipt_date', 'total_amount', 'merchant_name', 'category']
+
+
+ 
+

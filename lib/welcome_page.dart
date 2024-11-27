@@ -25,10 +25,10 @@ class _WelcomePageState extends State<WelcomePage> {
     // Handle notification taps when the app is in the background or terminated
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('Notification tapped! Navigating to specific page...');
-      // You can use the data in the notification to navigate to a specific page
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginPage()), // Replace with your specific page
+        MaterialPageRoute(builder: (context) => LoginPage()),
       );
     });
 
@@ -39,7 +39,7 @@ class _WelcomePageState extends State<WelcomePage> {
         // Navigate to a specific page based on the notification data
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()), // Replace with your specific page
+          MaterialPageRoute(builder: (context) => LoginPage()),
         );
       }
     });
@@ -67,7 +67,7 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[300], // Set the background color to a light green
+      backgroundColor: Colors.green[300],
       body: Stack(
         children: <Widget>[
           Container(
@@ -75,8 +75,8 @@ class _WelcomePageState extends State<WelcomePage> {
             height: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/background.png'), // Replace with the path to your image
-                fit: BoxFit.cover, // Make the image fit the container
+                image: AssetImage('assets/images/background.png'),
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -91,7 +91,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     style: TextStyle(
                       fontSize: 44.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black, // Update the text color to black
+                      color: Colors.black,
                       shadows: [
                         Shadow(
                           blurRadius: 10.0,
@@ -99,7 +99,7 @@ class _WelcomePageState extends State<WelcomePage> {
                           offset: Offset(0.0, 2.0),
                         ),
                       ],
-                      fontFamily: 'OpenSans', // Update the font family
+                      fontFamily: 'OpenSans',
                     ),
                   ),
                   SizedBox(height: 16.0),
@@ -108,7 +108,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     style: TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.w500,
-                      color: Colors.black, // Update the text color to black
+                      color: Colors.black,
                       shadows: [
                         Shadow(
                           blurRadius: 5.0,
@@ -116,7 +116,7 @@ class _WelcomePageState extends State<WelcomePage> {
                           offset: Offset(0.0, 2.0),
                         ),
                       ],
-                      fontFamily: 'OpenSans', // Update the font family
+                      fontFamily: 'OpenSans',
                     ),
                   ),
                   SizedBox(height: 64.0),
@@ -132,14 +132,14 @@ class _WelcomePageState extends State<WelcomePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.login, color: Colors.white,), // Add an icon to the button
+                          Icon(Icons.login, color: Colors.white,),
                           SizedBox(width: 8.0),
                           Text(
                             'Get Started',
                             style: TextStyle(
                               fontSize: 24.0,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white, // Update the text color to white
+                              color: Colors.white,
                               shadows: [
                                 Shadow(
                                   blurRadius: 5.0,
@@ -147,14 +147,14 @@ class _WelcomePageState extends State<WelcomePage> {
                                   offset: Offset(0.0, 2.0),
                                 ),
                               ],
-                              fontFamily: 'OpenSans', // Update the font family
+                              fontFamily: 'OpenSans',
                             ),
                           ),
                         ],
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink[800], // Set the button color to a darker green
+                      backgroundColor: Colors.pink[800],
                       padding: EdgeInsets.zero,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),

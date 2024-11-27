@@ -21,6 +21,7 @@ from piggu.views import IncomeViews, ExpenseViews, RegisterUserView, UserChartDa
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('piggu.urls')),  # Include the app's URLs here
     path('api/register/', RegisterUserView.as_view(), name='register'),
     path('api/income/', IncomeViews.as_view(), name='income-api'),
     path('api/expense/', ExpenseViews.as_view(), name='expense-api'),

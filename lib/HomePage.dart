@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'LoginPage.dart';
-import 'package:piggu/AddIncomePage.dart' as IncomePage;  // Aliased import
-import 'package:piggu/AddExpensePage.dart' as ExpensePage;  // Aliased import
+import 'package:piggu/AddIncomePage.dart' as IncomePage;
+import 'package:piggu/AddExpensePage.dart' as ExpensePage;
 import 'GoalsPage.dart';
 import 'AccountPage.dart';
 import 'receipt_scanner.dart';
 import 'HistoryPage.dart';
+import 'NotificationsPage.dart';
 
 class HomePage extends StatefulWidget {
   final User user;
@@ -215,7 +216,6 @@ class _HomePageState extends State<HomePage> {
         IconButton(
           icon: Icon(Icons.notifications),
           onPressed: () {
-            // Navigate to the NotificationsPage
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => NotificationsPage()),
@@ -227,7 +227,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBalanceCard() {
-    // Determine the color based on balance
     Color cardColor = balance >= 0 ? Colors.green.shade300 : Colors.red.shade300;
 
     return Card(
@@ -333,18 +332,3 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// NotificationsPage class
-class NotificationsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Notifications'),
-        backgroundColor: Colors.pink,
-      ),
-      body: Center(
-        child: Text('Here are your notifications!'),
-      ),
-    );
-  }
-}

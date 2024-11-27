@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'HomePage.dart';
 import 'SignupPage.dart';
 import 'ResetPasswordPage.dart';
-import 'services/django_service.dart'; // Import the DjangoService
+import 'services/django_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -52,8 +52,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               _firebaseIdToken = idToken;
             });
 
-            // Send the ID token to your backend to fetch user-specific data
-            //await _djangoService.sendTokenToBackend(idToken);
+
 
             // Navigate to HomePage after successful login
             Navigator.pushReplacement(
@@ -196,7 +195,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/signup');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SignupPage()),
+                        );
                       },
                       child: Text.rich(
                         TextSpan(

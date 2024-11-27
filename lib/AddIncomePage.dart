@@ -5,6 +5,7 @@ import 'EditIncomePage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:piggu/services/api_service.dart'; // Import ApiService
 
+
 class AddIncomePage extends StatefulWidget {
   @override
   _AddIncomePageState createState() => _AddIncomePageState();
@@ -15,6 +16,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
   final _incomeSourceController = TextEditingController();
   final _incomeAmountController = TextEditingController();
   final ApiService _apiService = ApiService(); // Instance of ApiService
+
 
   Map<String, Map<String, dynamic>> _incomeCategories = {
     'Salary': {'icon': Icons.work, 'description': 'Salary'},
@@ -50,9 +52,6 @@ class _AddIncomePageState extends State<AddIncomePage> {
         'timestamp': timestamp, // Add timestamp to the document
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Income added to Firebase successfully')),
-      );
 
       // Clear the form fields
       _incomeSourceController.clear();

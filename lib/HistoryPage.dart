@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'GraphsPage.dart'; // Import the GraphsPage
+import 'GraphsPage.dart';
 
 class HistoryPage extends StatefulWidget {
   @override
@@ -25,22 +25,22 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Future<void> _fetchHistoryData() async {
     setState(() {
-      isLoading = true; // Set loading to true while data is being fetched
+      isLoading = true;
     });
 
     try {
       // Fetching income data for the current user
       QuerySnapshot incomeSnapshot = await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)  // Access the user's document by their UID
-          .collection('income')  // Access the 'income' subcollection
+          .doc(user.uid)
+          .collection('income')
           .get();
 
       // Fetching expense data for the current user
       QuerySnapshot expenseSnapshot = await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)  // Access the user's document by their UID
-          .collection('expenses')  // Access the 'expenses' subcollection
+          .doc(user.uid)
+          .collection('expenses')
           .get();
 
       // Combining income and expense data

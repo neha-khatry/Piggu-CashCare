@@ -40,7 +40,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Reset Password'),
-        backgroundColor: Colors.pink, // Customize the AppBar color
+        backgroundColor: Colors.pink,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -83,7 +83,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 onPressed: _sendPasswordResetEmail,
                 child: Text(
                   'Send Reset Email',
-                  style: TextStyle(fontSize: 18, color: Colors.white), // White text
+                  style: TextStyle(fontSize: 18, color: Colors.white),
                 ),
               ),
             ],
