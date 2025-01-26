@@ -22,26 +22,27 @@ class ReceiptScannerApp extends StatelessWidget {
       title: 'Receipt Scanner',
       theme: ThemeData(
         primarySwatch: Colors.pink,
-        scaffoldBackgroundColor: Colors.white, // Set the background color to white
+        scaffoldBackgroundColor: Colors.white,
         appBarTheme: AppBarTheme(
-          color: Colors.pink, // Pink app bar
+          color: Colors.pink,
+          centerTitle: true, // Centers the title in the AppBar
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink, // Pink buttons
-            foregroundColor: Colors.white, // White text on buttons
+            backgroundColor: Colors.pink,
+            foregroundColor: Colors.white,
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
-          fillColor: Colors.pink.shade50, // Light pink input fields background
+          fillColor: Colors.pink.shade50,
           filled: true,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: BorderSide(color: Colors.pink), // Pink border
+            borderSide: BorderSide(color: Colors.pink),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: BorderSide(color: Colors.pink.shade700), // Darker pink when focused
+            borderSide: BorderSide(color: Colors.pink.shade700),
           ),
         ),
         snackBarTheme: SnackBarThemeData(
@@ -171,7 +172,13 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Receipt Scanner'),
+        title: Text(
+          'SCAN RECEIPT',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.pink,
+        centerTitle: true, // Center the title in the AppBar
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -276,14 +283,20 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed: _saveExtractedData,
+                  onPressed: () {
+                    _saveExtractedData();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ReceiptScanner()),
+                    );
+                  },
                   icon: Icon(Icons.save, color: Colors.white),
                   label: Text(
                     'Save',
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink.shade900,
+                    backgroundColor: Colors.pink.shade700,
                   ),
                 ),
               ],
@@ -296,24 +309,16 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
 
   Widget _buildDetailRow(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         children: [
+          Expanded(child: Text(label)),
           Expanded(
             flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.pink.shade800),
-            ),
-          ),
-          Expanded(
-            flex: 3,
             child: TextField(
               controller: controller,
               decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                labelText: label,
               ),
             ),
           ),

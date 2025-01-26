@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:piggu/FAQs.dart';
+import 'package:piggu/PredictionPage.dart';
 import 'LoginPage.dart';
 import 'HistoryPage.dart';
 import 'create_profile_page.dart';
@@ -213,7 +215,10 @@ class AccountPage extends StatelessWidget {
             leading: Icon(Icons.help_outline),
             title: Text('FAQs'),
             onTap: () {
-              // Navigate to FAQs page
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FAQPage()),
+              );
             },
           ),
           ExpansionTile(

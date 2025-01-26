@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'LoginPage.dart';
-import 'package:piggu/AddIncomePage.dart' as IncomePage;
-import 'package:piggu/AddExpensePage.dart' as ExpensePage;
+import 'package:piggu/AddIncomePage.dart' as IncomePage; // Aliased import
+import 'package:piggu/AddExpensePage.dart' as ExpensePage; // Aliased import
 import 'GoalsPage.dart';
 import 'AccountPage.dart';
 import 'receipt_scanner.dart';
 import 'HistoryPage.dart';
 import 'NotificationsPage.dart';
+import 'PredictionPage.dart'; // Import PredictionPage
 
 class HomePage extends StatefulWidget {
   final User user;
@@ -33,9 +34,12 @@ class _HomePageState extends State<HomePage> {
 
   void _listenToFinancialData() {
     final userId = FirebaseAuth.instance.currentUser?.uid;
-    FirebaseFirestore.instance.collection('users')
+    FirebaseFirestore.instance
+        .collection('users')
         .doc(userId)
-        .collection('income').snapshots().listen((snapshot) {
+        .collection('income')
+        .snapshots()
+        .listen((snapshot) {
       double income = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
       setState(() {
         totalIncome = income;
@@ -44,9 +48,12 @@ class _HomePageState extends State<HomePage> {
       });
     });
 
-    FirebaseFirestore.instance.collection('users')
+    FirebaseFirestore.instance
+        .collection('users')
         .doc(userId)
-        .collection('expenses').snapshots().listen((snapshot) {
+        .collection('expenses')
+        .snapshots()
+        .listen((snapshot) {
       double expenses = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
       setState(() {
         totalExpenses = expenses;
@@ -163,7 +170,7 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 20),
               _buildSummaryCards(),
               SizedBox(height: 20),
-              _buildActionGrid(),
+              _buildActionGrid(), // Action grid with Prediction added
             ],
           ),
         ),
@@ -214,7 +221,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.pink,
       actions: [
         IconButton(
-          icon: Icon(Icons.notifications),
+          icon: Icon(Icons.notifications, color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,
@@ -300,10 +307,10 @@ class _HomePageState extends State<HomePage> {
       physics: NeverScrollableScrollPhysics(),
       children: [
         _buildActionButton(Icons.add, 'Add Income', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => IncomePage.AddIncomePage()));  // Use alias
+          Navigator.push(context, MaterialPageRoute(builder: (context) => IncomePage.AddIncomePage()));
         }, Colors.green.shade300),
         _buildActionButton(Icons.remove, 'Add Expense', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ExpensePage.AddExpensePage()));  // Use alias
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ExpensePage.AddExpensePage()));
         }, Colors.red.shade300),
         _buildActionButton(Icons.camera, 'Scan Receipt', _scanReceipt, Colors.purple.shade300),
         _buildActionButton(Icons.flag, 'Goals', () {
@@ -312,6 +319,9 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (context) => GoalSettingPage(user: widget.user)),
           );
         }, Colors.blue.shade300),
+        _buildActionButton(Icons.insights, 'Prediction', () {
+          Navigator.pushNamed(context, '/prediction'); // Navigate to PredictionPage
+        }, Colors.orange.shade300),
       ],
     );
   }
@@ -331,4 +341,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-

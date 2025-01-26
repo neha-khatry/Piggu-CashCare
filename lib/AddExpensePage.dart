@@ -19,26 +19,21 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
   // Predefined expense categories with icons and descriptions
   Map<String, Map<String, dynamic>> _expenseCategories = {
-    'Food': {'icon': Icons.fastfood, 'description': 'Food and dining expenses'},
-    'Rent': {'icon': Icons.home, 'description': 'Rent and housing expenses'},
-    'Fuel': {
-      'icon': Icons.local_gas_station,
-      'description': 'Fuel and gas expenses'
-    },
-    'Electricity': {
-      'icon': Icons.flash_on,
-      'description': 'Electricity and utility expenses'
-    },
-    'Water': {'icon': Icons.waves, 'description': 'Water and utility expenses'},
-    'Education': {
-      'icon': Icons.school,
-      'description': 'Education and tuition expenses'
-    },
     'Grocery': {
       'icon': Icons.local_grocery_store,
       'description': 'Grocery and food expenses'
     },
-    'Health': {
+    'Rent': {'icon': Icons.home, 'description': 'Rent and housing expenses'},
+    'Household': {
+      'icon': Icons.home_work,
+      'description': 'Household and home maintenance expenses'
+    },
+    'Education': {
+      'icon': Icons.school,
+      'description': 'Education and tuition expenses'
+    },
+
+    'Health and Fitness': {
       'icon': Icons.local_hospital,
       'description': 'Health and medical expenses'
     },
@@ -46,67 +41,18 @@ class _AddExpensePageState extends State<AddExpensePage> {
       'icon': FontAwesomeIcons.tshirt,
       'description': 'Clothing and apparel expenses'
     },
-    'Accessories': {
-      'icon': FontAwesomeIcons.gem,
-      'description': 'Accessories and jewelry expenses'
-    },
-    'Tax': {'icon': Icons.money, 'description': 'Tax expenses'},
     'Travel': {
       'icon': Icons.flight_takeoff,
       'description': 'Travel and transportation expenses'
     },
-    'Office': {
-      'icon': Icons.business,
-      'description': 'Office and work expenses'
-    },
-    'Telephone/Cellphone': {
-      'icon': Icons.phone_iphone,
-      'description': 'Telephone and cellphone expenses'
-    },
-    'Fitness': {
-      'icon': Icons.fitness_center,
-      'description': 'Fitness and gym expenses'
-    },
-    'Transportation': {
-      'icon': Icons.directions_bus,
-      'description': 'Transportation and commuting expenses'
-    },
-    'Pets': {'icon': Icons.pets, 'description': 'Pet and animal expenses'},
-    'Gifts': {
-      'icon': Icons.card_giftcard,
-      'description': 'Gift and present expenses'
-    },
-    'Movies': {
-      'icon': Icons.movie,
-      'description': 'Movie and entertainment expenses'
-    },
-    'Furnitures': {
-      'icon': Icons.chair,
-      'description': 'Furniture and home expenses'
-    },
-    'Decoration': {
-      'icon': Icons.home_work,
-      'description': 'Decoration and home expenses'
-    },
-    'Insurance': {'icon': Icons.security, 'description': 'Insurance expenses'},
     'Electronics': {
       'icon': Icons.computer,
       'description': 'Electronics and gadget expenses'
     },
-    'Sports': {
-      'icon': Icons.sports_soccer,
-      'description': 'Sports and fitness expenses'
+    'Others': {
+      'icon': Icons.more_horiz,
+      'description': 'Other miscellaneous expenses'
     },
-    'Beauty': {
-      'icon': Icons.spa,
-      'description': 'Beauty and personal care expenses'
-    },
-    'Beverages': {
-      'icon': Icons.local_drink,
-      'description': 'Beverage and drink expenses'
-    },
-    'Home': {'icon': Icons.home, 'description': 'Home and household expenses'},
-    'Others': {'icon': Icons.more_horiz, 'description': 'Other expenses'},
   };
 
   // Helper function to format the date and time

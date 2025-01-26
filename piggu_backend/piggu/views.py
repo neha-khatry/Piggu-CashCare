@@ -38,7 +38,7 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), 'regressor.pkl')
 with open(MODEL_PATH, 'rb') as file:
     regressor_model = pickle.load(file)
 
-FOOD_PATH = os.path.join(os.path.dirname(__file__), 'prediction\\grocery_model.pkl')
+FOOD_PATH = os.path.join(os.path.dirname(__file__), 'prediction\\Savings.pkl')
 with open(FOOD_PATH, 'rb') as foodfile:
     food_model = load(foodfile)
 
@@ -87,7 +87,22 @@ class IncomeViews(APIView):
         except Exception as e:
             logger.error(f"Error fetching incomes: {str(e)}")
             return Response({"error": f"Failed to fetch incomes: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def put(self, request, pk=None):
+        try:
+            # Fetch the income record by ID
+            income = Income.objects.get(pk=pk)
 
+            # Validate and update the record
+            serializer = IncomeSerializer(income, data=request.data, partial=True)  # Allow partial updates
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Income.DoesNotExist:
+            return Response({"error": "Income not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Error updating income: {str(e)}")
+            return Response({"error": f"Failed to update income: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # Expense-related API view
 class ExpenseViews(APIView):
