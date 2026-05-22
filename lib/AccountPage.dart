@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:piggu/FAQs.dart';
-import 'package:piggu/PredictionPage.dart';
 import 'LoginPage.dart';
 import 'HistoryPage.dart';
 import 'create_profile_page.dart';
+import 'AboutPage.dart';
+import 'SMSController.dart';
+import 'package:get/get.dart';
 
 class AccountPage extends StatelessWidget {
+  final SMSController smsController = Get.put(SMSController());
   final User? user;
 
   AccountPage({this.user});
@@ -16,9 +19,7 @@ class AccountPage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (user == null) {
       return Scaffold(
-        body: Center(
-          child: Text("No user logged in"),
-        ),
+        body: Center(child: Text("No user logged in")),
       );
     }
 
@@ -42,76 +43,65 @@ class AccountPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            // Show the Create Profile option if profile is missing
             return _buildCreateProfilePrompt(context);
           }
 
           var userData = snapshot.data!.data() as Map<String, dynamic>;
-
-          return _buildProfileView(context, userData);
+          return SingleChildScrollView(
+            child: _buildProfileView(context, userData),
+          );
         },
       ),
     );
   }
 
-  // Widget to prompt user to create a profile
   Widget _buildCreateProfilePrompt(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'Profile not created yet!',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: () {
-              // Navigate to CreateProfilePage
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateProfilePage(
-                    isEditing: false, // Indicate that it's a new profile
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Profile not created yet!',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateProfilePage(isEditing: false),
                   ),
-                ),
-              );
-            },
-            icon: Icon(Icons.add),
-            label: Text('Create Profile'),
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                );
+              },
+              icon: Icon(Icons.add),
+              label: Text('Create Profile'),
             ),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: () async {
-              // Perform logout action
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
-            },
-            icon: Icon(Icons.exit_to_app),
-            label: Text('Logout'),
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+              icon: Icon(Icons.exit_to_app),
+              label: Text('Logout'),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  // Profile view with options
   Widget _buildProfileView(BuildContext context, Map<String, dynamic> data) {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           CircleAvatar(
@@ -156,7 +146,6 @@ class AccountPage extends StatelessWidget {
             SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: () {
-                // Navigate to CreateProfilePage for editing
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -172,10 +161,6 @@ class AccountPage extends StatelessWidget {
               },
               icon: Icon(Icons.edit),
               label: Text('Edit Details'),
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
             ),
           ],
         ),
@@ -184,70 +169,83 @@ class AccountPage extends StatelessWidget {
   }
 
   Widget _buildDetailRow(String title, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        Text(value),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+          Flexible(child: Text(value, overflow: TextOverflow.ellipsis)),
+        ],
+      ),
     );
   }
 
   Widget _buildOptionsSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: <Widget>[
-          ListTile(
-            leading: Icon(Icons.history),
-            title: Text('History'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HistoryPage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.help_outline),
-            title: Text('FAQs'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => FAQPage()),
-              );
-            },
-          ),
-          ExpansionTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
-            children: [
-              ListTile(
-                leading: Icon(Icons.lock),
-                title: Text('Change Password'),
-                onTap: () {
-                  _sendPasswordResetEmail(context);
-                },
-              ),
-            ],
-          ),
-          // Logout option moved to the bottom
-          ListTile(
-            leading: Icon(Icons.exit_to_app), // Ensure the correct icon
-            title: Text('Logout'),
-            onTap: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
-            },
-          ),
-        ],
-      ),
+    return Column(
+      children: <Widget>[
+        ListTile(
+          leading: Icon(Icons.history),
+          title: Text('History'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => HistoryPage()),
+            );
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.sms),
+          title: Text('Listen for SMS Notifications'),
+          onTap: () {
+            smsController.requestForPermission();
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.help_outline),
+          title: Text('FAQs'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FAQPage()),
+            );
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.info),
+          title: Text('About'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AboutPage()),
+            );
+          },
+        ),
+        ExpansionTile(
+          leading: Icon(Icons.settings),
+          title: Text('Settings'),
+          children: [
+            ListTile(
+              leading: Icon(Icons.lock),
+              title: Text('Change Password'),
+              onTap: () {
+                _sendPasswordResetEmail(context);
+              },
+            ),
+          ],
+        ),
+        ListTile(
+          leading: Icon(Icons.exit_to_app),
+          title: Text('Logout'),
+          onTap: () async {
+            await FirebaseAuth.instance.signOut();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -255,10 +253,7 @@ class AccountPage extends StatelessWidget {
     try {
       if (FirebaseAuth.instance.currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("No user logged in"),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text("No user logged in"), backgroundColor: Colors.red),
         );
         return;
       }
@@ -268,17 +263,11 @@ class AccountPage extends StatelessWidget {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Password reset email sent!'),
-          backgroundColor: Colors.green,
-        ),
+        SnackBar(content: Text('Password reset email sent!'), backgroundColor: Colors.green),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red),
       );
     }
   }

@@ -13,7 +13,7 @@ class FAQPageApp extends StatelessWidget {
         primarySwatch: Colors.pink,
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: AppBarTheme(
-          color: Colors.pink.shade600,
+          backgroundColor: Colors.pink.shade600,
           centerTitle: true,
         ),
       ),

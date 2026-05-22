@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-p7@+g6u*wid!&(1ca-9eh%d)e_wu)6tp5ebmca*1=t+*k^a=^@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Enable debugging during development
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']  # Allow the emulator and localhost to connect
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2', '172.20.10.5',' 192.168.1.11']  # Allow the emulator and localhost to connect
 
 
 # Application definition

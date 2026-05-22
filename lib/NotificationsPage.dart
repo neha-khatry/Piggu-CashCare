@@ -181,7 +181,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text('OK'),
             ),
           ],
         );

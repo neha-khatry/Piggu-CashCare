@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include 
-from piggu.views import IncomeViews, ExpenseViews, RegisterUserView, UserChartData
+from piggu.views import IncomeViews, ExpenseViews, RegisterUserView, UserChartData,monthly_income_chart
 
 
 urlpatterns = [
@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/expense/', ExpenseViews.as_view(), name='expense-api'),
     path('api/user-chart-data/', UserChartData.as_view(), name='user-chart-data'),
     path('', include('piggu.urls')),  # Include app-level URLs
+    path("monthly-income-chart/", monthly_income_chart.as_view(), name="monthly_income_chart"),
 ]

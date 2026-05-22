@@ -92,7 +92,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       );
 
       // Redirect to AccountPage after a short delay
-      await Future.delayed(Duration(seconds: 2));
+      /*await Future.delayed(Duration(seconds: 2));*/
 
       Navigator.pushReplacement(
         context,

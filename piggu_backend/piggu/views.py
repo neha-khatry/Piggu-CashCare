@@ -4,8 +4,9 @@ from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from piggu.models import Income, Expense, User
-from piggu.serializers import IncomeSerializer, ExpenseSerializer
+from piggu.models import Income, Expense, User, MonthlySummary
+from piggu.serializers import IncomeSerializer, ExpenseSerializer, MonthlySummarySerializer
+from .utils import aggregate_monthly_summary
 from firebase_admin import firestore
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -24,6 +25,7 @@ import os
 from django.http import JsonResponse
 from .models import Receipt
 import matplotlib
+from django.db.models.functions import TruncMonth
 import pickle
 from joblib import load
 matplotlib.use('Agg')
@@ -38,7 +40,7 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), 'regressor.pkl')
 with open(MODEL_PATH, 'rb') as file:
     regressor_model = pickle.load(file)
 
-FOOD_PATH = os.path.join(os.path.dirname(__file__), 'prediction\\Savings.pkl')
+FOOD_PATH = os.path.join(os.path.dirname(__file__), 'prediction\\food_model.pkl')
 with open(FOOD_PATH, 'rb') as foodfile:
     food_model = load(foodfile)
 
@@ -286,3 +288,87 @@ def predict(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+class monthly_income_chart(APIView):
+    def get(self, request):
+        user_id = request.headers.get('User-ID')  # Get user_id from the request header
+
+        if not user_id:
+            return Response({"error": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if user exists in the database
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # Fetch income data for the user, grouped by month
+            income_data = (
+                Income.objects.filter(user_id=user_id)
+                .annotate(month=TruncMonth('timestamp'))
+                .values('month')
+                .annotate(total_income=Sum('amount'))
+                .order_by('month')
+            )
+
+            # Fetch expense data for the user, grouped by month
+            expense_data = (
+                Expense.objects.filter(user_id=user_id)
+                .annotate(month=TruncMonth('timestamp'))
+                .values('month')
+                .annotate(total_expense=Sum('amount'))
+                .order_by('month')
+            )
+
+            # If no data is found for income or expenses, return a message
+            if not income_data and not expense_data:
+                return Response({"error": "No income or expense data found for this user."}, status=status.HTTP_404_NOT_FOUND)
+
+            # Prepare dataframes for income and expenses
+            income_df = pd.DataFrame(list(income_data))
+            expense_df = pd.DataFrame(list(expense_data))
+
+            # Generate the monthly income and expense charts
+            charts = {}
+
+            # Generate monthly income chart
+            if not income_df.empty:
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.plot(income_df['month'], income_df['total_income'], color='green', marker='o', label='Income')
+                ax.set_xlabel('Month')
+                ax.set_ylabel('Total Income')
+                ax.set_title(f'Monthly Income')
+                ax.legend()
+                buf = BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                charts['income_chart'] = base64.b64encode(buf.read()).decode('utf-8')
+                plt.close(fig)  # Close the figure after saving to buffer
+
+            # Generate monthly expense chart
+            if not expense_df.empty:
+                fig, ax = plt.subplots(figsize=(10, 6))
+                ax.plot(expense_df['month'], expense_df['total_expense'], color='red', marker='o', label='Expense')
+                ax.set_xlabel('Month')
+                ax.set_ylabel('Total Expense')
+                ax.set_title(f'Monthly Expenses')
+                ax.legend()
+                buf = BytesIO()
+                plt.savefig(buf, format='png')
+                buf.seek(0)
+                charts['expense_chart'] = base64.b64encode(buf.read()).decode('utf-8')
+                plt.close(fig)  # Close the figure after saving to buffer
+
+            # Return the charts along with the monthly income and expense data
+            return Response({
+                'charts': charts,
+                'income': list(income_data),
+                'expense': list(expense_data),
+            })
+
+        except Exception as e:
+            # Log any errors that occur during the process
+            logger.error(f"Error generating monthly summary: {str(e)}")
+            return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

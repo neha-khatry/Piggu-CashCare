@@ -48,11 +48,77 @@ class DjangoService {
           'expense_chart': expenseChart,
         };
       } else {
-        throw Exception('Failed to fetch chart data (HTTP ${response.statusCode})');
+        throw Exception(
+            'Failed to fetch chart data (HTTP ${response.statusCode})');
       }
     } catch (e) {
       print('Error fetching chart data: $e');
       throw Exception('Error fetching chart data');
+    }
+  }
+
+  Future<Map<String, String>> fetchMonthlyChart(String userId) async {
+    try {
+      final chartUrl = '$baseUrl/monthly-income-chart/'; // Endpoint for chart data
+      final response = await http.get(
+        Uri.parse(chartUrl),
+        headers: {
+          'User-ID': userId, // Send the user_id in the request header
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Decode the JSON response
+        final data = json.decode(response.body);
+
+        // Extract income and expense charts (base64 strings)
+        final incomeChart = data['charts']?['income_chart'] ?? '';
+        final expenseChart = data['charts']?['expense_chart'] ?? '';
+
+        // Check if both charts are valid base64 strings
+        if (incomeChart is! String || expenseChart is! String) {
+          throw Exception('Invalid chart data format');
+        }
+
+        // Return base64 strings for both charts
+        return {
+          'income_chart': incomeChart,
+          'expense_chart': expenseChart,
+        };
+      } else {
+        throw Exception(
+            'Failed to fetch chart data (HTTP ${response.statusCode})');
+      }
+    } catch (e) {
+      print('Error fetching chart data: $e');
+      throw Exception('Error fetching chart data');
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchExpenseComparison(String userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/expense_comparison/'),
+      headers: {"User-ID": userId},
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      print("Failed to fetch expense comparison");
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchSourceExpenseComparison(String userId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/source-expense-comparison/'),
+      headers: {'User-ID': userId},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {'message': 'Failed to fetch data'};
     }
   }
 }

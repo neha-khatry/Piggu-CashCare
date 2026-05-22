@@ -25,7 +25,6 @@ class ReceiptScannerApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: AppBarTheme(
           color: Colors.pink,
-          centerTitle: true, // Centers the title in the AppBar
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -172,13 +171,7 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'SCAN RECEIPT',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.pink,
-        centerTitle: true, // Center the title in the AppBar
+        title: Text('Receipt Scanner'),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -285,9 +278,10 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
                 ElevatedButton.icon(
                   onPressed: () {
                     _saveExtractedData();
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => ReceiptScanner()),
+                      MaterialPageRoute(builder: (context) =>
+                          ReceiptScanner()),
                     );
                   },
                   icon: Icon(Icons.save, color: Colors.white),
@@ -296,7 +290,7 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink.shade700,
+                    backgroundColor: Colors.pink.shade900,
                   ),
                 ),
               ],
@@ -309,16 +303,24 @@ class _ReceiptScannerState extends State<ReceiptScanner> {
 
   Widget _buildDetailRow(String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Expanded(child: Text(label)),
           Expanded(
             flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.pink.shade800),
+            ),
+          ),
+          Expanded(
+            flex: 3,
             child: TextField(
               controller: controller,
               decoration: InputDecoration(
-                labelText: label,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
           ),

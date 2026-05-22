@@ -38,7 +38,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
       'description': 'Health and medical expenses'
     },
     'Clothing': {
-      'icon': FontAwesomeIcons.tshirt,
+      'icon': FontAwesomeIcons.shirt,
       'description': 'Clothing and apparel expenses'
     },
     'Travel': {

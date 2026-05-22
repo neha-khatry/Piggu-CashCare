@@ -13,8 +13,7 @@ class _HistoryPageState extends State<HistoryPage> {
   Map<String, List<Map<String, dynamic>>> _groupedHistory = {};
   DateTime? _selectedDate;
   final User user = FirebaseAuth.instance.currentUser!; // Access current user
-  Map<String, List<double>> dailyIncome = {}; // List
-  // of income amounts for each day
+  Map<String, List<double>> dailyIncome = {}; // List of income amounts for each day
   Map<String, List<double>> dailyExpenses = {}; // List of expense amounts for each day
   bool isLoading = false; // Add loading state
 
@@ -146,12 +145,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('HISTORY',  style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-          fontFamily: 'Pacifico',
-        ),),
+        title: Text('History'),
         backgroundColor: Colors.pink,
         elevation: 10,
         actions: [

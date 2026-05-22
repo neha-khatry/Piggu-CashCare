@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'LoginPage.dart';
-import 'package:piggu/AddIncomePage.dart' as IncomePage; // Aliased import
-import 'package:piggu/AddExpensePage.dart' as ExpensePage; // Aliased import
+import 'package:piggu/AddIncomePage.dart' as IncomePage;
+import 'package:piggu/AddExpensePage.dart' as ExpensePage;
 import 'GoalsPage.dart';
 import 'AccountPage.dart';
 import 'receipt_scanner.dart';
 import 'HistoryPage.dart';
 import 'NotificationsPage.dart';
-import 'PredictionPage.dart'; // Import PredictionPage
+import 'PredictionPage.dart';
+
 
 class HomePage extends StatefulWidget {
-  final User user;
+  final User? user;
 
-  HomePage({required this.user});
+  HomePage({this.user});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -34,12 +35,9 @@ class _HomePageState extends State<HomePage> {
 
   void _listenToFinancialData() {
     final userId = FirebaseAuth.instance.currentUser?.uid;
-    FirebaseFirestore.instance
-        .collection('users')
+    FirebaseFirestore.instance.collection('users')
         .doc(userId)
-        .collection('income')
-        .snapshots()
-        .listen((snapshot) {
+        .collection('income').snapshots().listen((snapshot) {
       double income = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
       setState(() {
         totalIncome = income;
@@ -48,12 +46,9 @@ class _HomePageState extends State<HomePage> {
       });
     });
 
-    FirebaseFirestore.instance
-        .collection('users')
+    FirebaseFirestore.instance.collection('users')
         .doc(userId)
-        .collection('expenses')
-        .snapshots()
-        .listen((snapshot) {
+        .collection('expenses').snapshots().listen((snapshot) {
       double expenses = snapshot.docs.fold(0.0, (sum, doc) => sum + (doc['amount'] ?? 0.0));
       setState(() {
         totalExpenses = expenses;
@@ -78,46 +73,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showProfileOptions() {
-    showMenu(
-      context: context,
-      position: RelativeRect.fromLTRB(0, 50, 0, 0),
-      items: [
-        PopupMenuItem(
-          child: Text('Account'),
-          value: 'account',
-        ),
-        PopupMenuItem(
-          child: Text('History'),
-          value: 'history',
-        ),
-        PopupMenuItem(
-          child: Text('Log out'),
-          value: 'logout',
-        ),
-      ],
-      elevation: 8.0,
-    ).then<void>((String? value) {
-      if (value != null) {
-        switch (value) {
-          case 'account':
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AccountPage(user: widget.user)),
-            );
-            break;
-          case 'history':
-            _navigateToHistoryPage();
-            break;
-          case 'logout':
-            _logout(context);
-            break;
-        }
-      }
-    });
-  }
-
-  void _scanReceipt() async {
+   void _scanReceipt() async {
     final receiptData = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ReceiptScanner()),
@@ -170,7 +126,7 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 20),
               _buildSummaryCards(),
               SizedBox(height: 20),
-              _buildActionGrid(), // Action grid with Prediction added
+              _buildActionGrid(),
             ],
           ),
         ),
@@ -203,6 +159,7 @@ class _HomePageState extends State<HomePage> {
 
   AppBar _buildCustomAppBar() {
     return AppBar(
+      automaticallyImplyLeading: false,
       title: Row(
         children: [
           Image.asset('assets/images/logo.png', height: 30, width: 30),
@@ -221,8 +178,9 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.pink,
       actions: [
         IconButton(
-          icon: Icon(Icons.notifications, color: Colors.white),
+          icon: Icon(Icons.notifications, color: Colors.white),  // Notification icon color changed to white
           onPressed: () {
+            // Navigate to the NotificationsPage
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => NotificationsPage()),
@@ -234,6 +192,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBalanceCard() {
+    // Determine the color based on balance
     Color cardColor = balance >= 0 ? Colors.green.shade300 : Colors.red.shade300;
 
     return Card(
@@ -307,21 +266,27 @@ class _HomePageState extends State<HomePage> {
       physics: NeverScrollableScrollPhysics(),
       children: [
         _buildActionButton(Icons.add, 'Add Income', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => IncomePage.AddIncomePage()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => IncomePage.AddIncomePage()));  // Use alias
         }, Colors.green.shade300),
         _buildActionButton(Icons.remove, 'Add Expense', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ExpensePage.AddExpensePage()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ExpensePage.AddExpensePage()));  // Use alias
         }, Colors.red.shade300),
         _buildActionButton(Icons.camera, 'Scan Receipt', _scanReceipt, Colors.purple.shade300),
         _buildActionButton(Icons.flag, 'Goals', () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => GoalSettingPage(user: widget.user)),
+            MaterialPageRoute(builder: (context) => GoalSettingPage(user: widget.user!)),
           );
         }, Colors.blue.shade300),
-        _buildActionButton(Icons.insights, 'Prediction', () {
-          Navigator.pushNamed(context, '/prediction'); // Navigate to PredictionPage
-        }, Colors.orange.shade300),
+
+        _buildActionButton(Icons.bar_chart, 'Prediction', () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PredictionPage(), // Pass Firebase token
+            ),
+          );
+        }, Colors.lightGreen.shade300),
       ],
     );
   }

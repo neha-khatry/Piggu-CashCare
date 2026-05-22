@@ -42,3 +42,19 @@ class Receipt(models.Model):
 
     def __str__(self):
         return f"Receipt {self.receipt_number}"
+    
+class MonthlySummary(models.Model):
+    user_id = models.CharField(max_length=255)  # Firebase UID
+    month = models.PositiveIntegerField()  # Month number (1-12)
+    year = models.PositiveIntegerField()   # Year (e.g., 2024)
+    total_income = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    total_expense = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    class Meta:
+        db_table = 'piggu_monthly_summary'
+        unique_together = ('user_id', 'month', 'year')  # Prevent duplicates
+        ordering = ['-year', '-month']
+
+    def __str__(self):
+        return f"{self.user_id} - {self.month}/{self.year}"
