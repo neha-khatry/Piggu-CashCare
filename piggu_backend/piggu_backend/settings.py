@@ -9,9 +9,8 @@ load_dotenv()
 # Base directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# ✅ Cross-platform
-FIREBASE_CREDENTIALS = os.path.join(
-    BASE_DIR, 'firebase_key', 'serviceAccountKey.json')
+
+FIREBASE_CREDENTIALS = os.getenv('FIREBASE_KEY_PATH')
 
 # Initialize Firebase app (to avoid reinitialization error)
 if not firebase_admin._apps:
