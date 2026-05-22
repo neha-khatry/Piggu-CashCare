@@ -1,16 +1,17 @@
+from firebase_admin import credentials, firestore
+import firebase_admin
 from pathlib import Path
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-import firebase_admin
-from firebase_admin import credentials, firestore
 # Base directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Path to your Firebase Admin SDK JSON file
-FIREBASE_CREDENTIALS = os.path.join(BASE_DIR,'firebase_key\\serviceAccountKey.json')
+# ✅ Cross-platform
+FIREBASE_CREDENTIALS = os.path.join(
+    BASE_DIR, 'firebase_key', 'serviceAccountKey.json')
 
 # Initialize Firebase app (to avoid reinitialization error)
 if not firebase_admin._apps:
@@ -34,7 +35,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost','10.0.2.2','192.168.56.1','192.168.121.4']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost',
+                 '10.0.2.2', '192.168.56.1', '192.168.121.4']
 
 
 # Application definition
@@ -48,7 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'piggu',
-    'rest_framework'
+    'rest_framework',
+    'graphs',
 ]
 
 MIDDLEWARE = [
@@ -144,6 +147,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Path to your custom JWT Authentication class
+        # Path to your custom JWT Authentication class
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
