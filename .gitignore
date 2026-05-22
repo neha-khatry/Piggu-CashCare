@@ -9,6 +9,8 @@ __pycache__/
 .env
 .env.*
 firebase_key/serviceAccountKey.json
+piggu_backend/firebase_key/
+
 
 # ===== Django =====
 db.sqlite3
