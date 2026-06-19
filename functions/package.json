@@ -20,7 +20,7 @@
     "flatted": "^3.4.2",
     "form-data": "^4.0.6",
     "node-forge": "^1.4.0",
-    "protobufjs": "^8.4.2"
+    "protobufjs": "^8.6.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
