@@ -46,3 +46,9 @@ android/.gradle/
 android/app/google-services.json
 android/build/
 
+# ===== Node =====
+node_modules/
+
+# ===== Python virtual environment =====
+venv/
+.venv/
